@@ -461,7 +461,6 @@ tbody tr:hover{background:#f9f9f6}
             <span style="font-size:0.8rem;color:var(--muted)">Cadastro completo de cavalos</span>
             <div style="display:flex;gap:8px">
               <button class="btn btn-outline" onclick="abrirModalQR('cadastro')">📱 QR Cadastro</button>
-              <button class="btn btn-blue" onclick="abrirModalQR('votacao')">🗳 QR Votação</button>
               <button class="btn btn-green" onclick="abrirModalCavalo()">+ Novo Cavalo</button>
             </div>
           </div>
@@ -486,7 +485,7 @@ tbody tr:hover{background:#f9f9f6}
         <!-- SIMULAÇÃO -->
         <div class="admin-section" id="admin-simulacao">
           <div style="margin-bottom:12px">
-            <p style="font-size:0.8rem;color:var(--muted);margin-bottom:12px">Selecione uma corrida cadastrada para simular, ou configure participantes livres abaixo.</p>
+            <p style="font-size:0.8rem;color:var(--muted);margin-bottom:12px">Configure os cavalos, abra a votação com o QR, depois inicie a corrida. O resultado aparece automaticamente para quem votou.</p>
             <!-- Selecionar corrida para simular -->
             <div class="card" style="margin-bottom:12px">
               <div class="card-head"><div class="card-title">📋 Simular Corrida Cadastrada</div></div>
@@ -508,7 +507,7 @@ tbody tr:hover{background:#f9f9f6}
             <div class="card" style="margin-bottom:12px">
               <div class="card-head">
                 <div class="card-title">🐎 Participantes</div>
-                <span class="card-meta" id="sim-count-label">0 / 10</span>
+                <span class="card-meta" id="sim-count-label">0 / 20</span>
               </div>
               <div style="padding:12px 16px;display:flex;flex-wrap:wrap;gap:8px" id="sim-participants-list">
                 <span style="color:var(--muted);font-size:0.78rem">Adicione cavalos abaixo.</span>
@@ -518,6 +517,40 @@ tbody tr:hover{background:#f9f9f6}
                   <option value="">— Selecionar cavalo —</option>
                 </select>
                 <button class="btn btn-green btn-sm" onclick="adicionarParticipante()">+ Adicionar</button>
+              </div>
+            </div>
+
+            <!-- QR VOTAÇÃO integrado na simulação -->
+            <div class="card" style="margin-bottom:12px;border:1px solid rgba(201,168,76,0.3);background:linear-gradient(135deg,rgba(201,168,76,0.04),transparent)">
+              <div class="card-head" style="background:transparent">
+                <div class="card-title" style="color:var(--goldd)">🗳 QR de Votação</div>
+                <span class="card-meta">Disponibilize antes da corrida</span>
+              </div>
+              <div class="card-body" style="display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start">
+                <!-- QR canvas -->
+                <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px;display:inline-block;flex-shrink:0">
+                  <canvas id="sim-qr-canvas" width="160" height="160"></canvas>
+                </div>
+                <!-- Info + stats -->
+                <div>
+                  <div style="font-size:0.75rem;color:var(--muted);margin-bottom:10px;line-height:1.6">
+                    Mostre este QR para o público votar no cavalo favorito. O placar aparece abaixo em tempo real. Ao fim da corrida, cada votante verá a posição do cavalo que escolheu.
+                  </div>
+                  <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+                    <button class="btn btn-gold btn-sm" onclick="gerarQRSimulacao()">🔄 Gerar / Atualizar QR</button>
+                    <button class="btn btn-outline btn-sm" onclick="baixarQRSim()">⬇ Baixar</button>
+                    <button class="btn btn-outline btn-sm" onclick="copiarLinkSim()">📋 Copiar link</button>
+                  </div>
+                  <!-- Vote stats inline -->
+                  <div id="sim-vote-stats">
+                    <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);margin-bottom:8px">📊 Votos em tempo real</div>
+                    <div id="sim-vote-list" style="font-size:0.8rem;color:var(--text)"><span style="color:var(--muted)">Nenhum voto ainda.</span></div>
+                    <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center">
+                      <span style="font-size:0.72rem;color:var(--muted)" id="sim-vote-total">Total: 0 votos</span>
+                      <button class="btn btn-outline btn-sm" onclick="limparVotosSim()" style="font-size:0.65rem">🗑 Limpar</button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -950,7 +983,7 @@ function showAdminTab(tab,e){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('admin-'+tab).classList.add('active');
   if(e&&e.target)e.target.classList.add('active');
-  if(tab==='simulacao'){popularSimCorridaSelect();popularSimSelect();}
+  if(tab==='simulacao'){popularSimCorridaSelect();popularSimSelect();gerarQRSimulacao();}
 }
 
 // ─── PROGRAMA ─────────────────────────────────────────────────────────────────
@@ -1429,27 +1462,27 @@ function popularSimSelect(){
   });
 }
 function adicionarParticipante(){
-  if(simParticipants.length>=10){alert('Máximo de 10 cavalos.');return;}
+  if(simParticipants.length>=20){alert('Máximo de 20 cavalos.');return;}
   const sel=document.getElementById('sim-add-select');
   const id=parseInt(sel.value);if(!id){alert('Selecione um cavalo.');return;}
   const c=getCavalo(id);if(!c)return;
   simParticipants.push({nome:c.nome,id:c.id});
-  renderSimParticipants();popularSimSelect();
+  renderSimParticipants();popularSimSelect();gerarQRSimulacao();
 }
 function removerParticipante(idx){
   simParticipants.splice(idx,1);
-  renderSimParticipants();popularSimSelect();
+  renderSimParticipants();popularSimSelect();gerarQRSimulacao();
 }
 function usarCavalosPadrao(){
   simParticipants=[];
   cavalos.slice(0,5).forEach(c=>simParticipants.push({nome:c.nome,id:c.id}));
   ['Rio Bravo','Sol Dourado','Noite Estrelada','Mar Profundo','Tempestade'].forEach(n=>simParticipants.push({nome:n,id:null}));
-  renderSimParticipants();popularSimSelect();
+  renderSimParticipants();popularSimSelect();gerarQRSimulacao();
 }
 function renderSimParticipants(){
   const el=document.getElementById('sim-participants-list');
   if(!el)return;
-  document.getElementById('sim-count-label').textContent=`${simParticipants.length} / 10`;
+  document.getElementById('sim-count-label').textContent=`${simParticipants.length} / 20`;
   if(!simParticipants.length){el.innerHTML='<span style="color:var(--muted);font-size:0.78rem">Adicione cavalos ou use os padrão.</span>';return;}
   el.innerHTML=simParticipants.map((p,i)=>`
     <div style="display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:0.78rem;font-weight:600;color:var(--gd)">
@@ -1571,6 +1604,13 @@ function renderSimResults(){
       <span style="color:rgba(255,255,255,0.3);margin-left:auto;font-size:0.72rem">${pos+1}º lugar</span>
     </div>`).join('')}
   </div>`;
+  // Save race result to localStorage so vote.html can show final positions
+  try{
+    const result={};
+    simFinished.forEach((hIdx,pos)=>{result[simParticipants[hIdx].nome]=pos+1;});
+    localStorage.setItem('rt_sim_result',JSON.stringify(result));
+    localStorage.setItem('rt_sim_finished','1');
+  }catch(e){}
 }
 function resetSimulacao(){
   clearInterval(simInterval);clearInterval(simTimerInterval);
@@ -1581,7 +1621,79 @@ function resetSimulacao(){
   document.getElementById('btn-sim-start').disabled=false;
   document.getElementById('sim-track-area').innerHTML='<div style="text-align:center;padding:2rem;color:rgba(255,255,255,0.2);font-size:0.82rem">Configure os participantes e inicie a corrida</div>';
   document.getElementById('sim-results-area').innerHTML='';
+  try{localStorage.removeItem('rt_sim_result');localStorage.removeItem('rt_sim_finished');}catch(e){}
 }
+
+// ─── QR SIMULAÇÃO ─────────────────────────────────────────────────────────────
+const SIM_VOTE_URL='https://x-mota.github.io/royalturf/vote.html?sim=1';
+let _simQrObj=null;
+
+function gerarQRSimulacao(){
+  // Save current participants to localStorage so vote.html can read them
+  try{
+    const data={participants:simParticipants.map((p,i)=>({nome:p.nome,id:p.id,cor:HORSE_COLORS[i%HORSE_COLORS.length]}))};
+    localStorage.setItem('rt_sim_participants',JSON.stringify(data));
+    localStorage.removeItem('rt_sim_result');
+    localStorage.removeItem('rt_sim_finished');
+  }catch(e){}
+  const canvas=document.getElementById('sim-qr-canvas');
+  if(!canvas)return;
+  const tmp=document.createElement('div');
+  tmp.style.cssText='position:absolute;left:-9999px;top:-9999px';
+  document.body.appendChild(tmp);
+  if(_simQrObj){try{_simQrObj.clear();}catch(e){}}
+  if(window.QRCode){
+    _simQrObj=new QRCode(tmp,{text:SIM_VOTE_URL,width:160,height:160,colorDark:'#081a10',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+    setTimeout(()=>{
+      const src=tmp.querySelector('img');const cvs=tmp.querySelector('canvas');
+      const ctx=canvas.getContext('2d');ctx.clearRect(0,0,160,160);
+      if(src&&src.src.startsWith('data:')){const i=new Image();i.onload=()=>ctx.drawImage(i,0,0,160,160);i.src=src.src;}
+      else if(cvs)ctx.drawImage(cvs,0,0,160,160);
+      document.body.removeChild(tmp);
+    },400);
+  }
+  atualizarVoteStatsSim();
+}
+function baixarQRSim(){
+  const canvas=document.getElementById('sim-qr-canvas');
+  if(!canvas)return;
+  const a=document.createElement('a');a.download='qr-votacao-corrida.png';a.href=canvas.toDataURL('image/png');a.click();
+}
+function copiarLinkSim(){
+  navigator.clipboard.writeText(SIM_VOTE_URL).then(()=>alert('Link copiado!')).catch(()=>{});
+}
+function limparVotosSim(){
+  try{localStorage.removeItem('rt_sim_votes');}catch(e){}
+  atualizarVoteStatsSim();
+}
+function atualizarVoteStatsSim(){
+  const el=document.getElementById('sim-vote-list');
+  const tot=document.getElementById('sim-vote-total');
+  if(!el||!simParticipants.length){if(el)el.innerHTML='<span style="color:var(--muted)">Nenhum cavalo configurado.</span>';return;}
+  let votes={};
+  try{votes=JSON.parse(localStorage.getItem('rt_sim_votes')||'{}');}catch(e){}
+  const total=Object.values(votes).reduce((a,b)=>a+b,0);
+  el.innerHTML=simParticipants.map((p,i)=>{
+    const cnt=votes[p.nome]||0;
+    const pct=total?Math.round(cnt/total*100):0;
+    return `<div style="margin-bottom:7px">
+      <div style="display:flex;justify-content:space-between;font-size:0.76rem;margin-bottom:2px">
+        <span style="font-weight:600;display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:${HORSE_COLORS[i%HORSE_COLORS.length]};display:inline-block"></span>${p.nome}</span>
+        <span style="color:var(--goldd);font-weight:700">${cnt} (${pct}%)</span>
+      </div>
+      <div style="background:var(--border);border-radius:4px;height:5px;overflow:hidden">
+        <div style="background:linear-gradient(90deg,var(--ga),var(--gold));height:5px;width:${pct}%;transition:width 0.4s"></div>
+      </div>
+    </div>`;
+  }).join('');
+  if(tot)tot.textContent=`Total: ${total} voto${total!==1?'s':''}`;
+}
+// Poll votes every 3s
+setInterval(()=>{
+  if(document.getElementById('admin-simulacao')?.classList.contains('active')){
+    atualizarVoteStatsSim();
+  }
+},3000);
 
 // ─── MISC ──────────────────────────────────────────────────────────────────────
 function exportarPDF(){alert('Relatório PDF: exibe apostas, odds, ganhos e prejuízos do apostador em formato imprimível.');}
