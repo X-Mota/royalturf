@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Royal Turf · Votação</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gd:#081a10;--gm:#0f2b1a;--ga:#1f6b3d;
+  --gold:#c9a84c;--goldl:#e8c97a;--goldd:#8a6010;
+  --cream:#f5f1e8;--white:#fff;--text:#1a1a1a;--muted:#6b7280;
+  --border:#e5e2d8;--surface:#fafaf7;
+}
+html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--gd);color:var(--white);font-size:15px}
+.header{text-align:center;padding:28px 20px 16px;background:linear-gradient(180deg,rgba(201,168,76,0.1) 0%,transparent 100%);border-bottom:1px solid rgba(201,168,76,0.15)}
+.logo{font-family:'Playfair Display',serif;color:var(--gold);font-size:1.5rem;font-weight:700}
+.logo-icon{font-size:2rem;display:block;margin-bottom:4px;filter:drop-shadow(0 0 8px rgba(201,168,76,0.4))}
+.subtitle{color:rgba(255,255,255,0.4);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin-top:4px}
+
+.screen{display:none;padding:20px;max-width:440px;margin:0 auto}
+.screen.active{display:block}
+
+/* VOTE */
+.vote-intro{text-align:center;padding:8px 0 18px;color:rgba(255,255,255,0.45);font-size:0.84rem;line-height:1.6}
+.horse-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden}
+.horse-card:active{transform:scale(0.98)}
+.horse-card.selected{background:rgba(201,168,76,0.1);border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,168,76,0.25)}
+.horse-card.selected::after{content:'✓';position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--gold);font-size:1.2rem;font-weight:700}
+.horse-num{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:#fff;flex-shrink:0}
+.horse-name{font-weight:700;font-size:0.95rem;color:rgba(255,255,255,0.9)}
+.horse-emoji{font-size:1.5rem}
+.vote-btn{width:100%;background:linear-gradient(135deg,var(--ga),#16543a);color:#fff;border:none;border-radius:12px;padding:15px;font-size:1rem;font-weight:700;letter-spacing:0.03em;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 4px 20px rgba(31,107,61,0.4);transition:all 0.2s;margin-top:8px}
+.vote-btn:hover:not(:disabled){transform:translateY(-2px)}
+.vote-btn:disabled{opacity:0.35;cursor:not-allowed;transform:none}
+.already-voted{text-align:center;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:10px;padding:10px 16px;font-size:0.78rem;color:rgba(255,255,255,0.4);margin-top:10px}
+.view-results-btn{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);border-radius:10px;padding:11px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:8px;transition:all 0.2s}
+.view-results-btn:hover{background:rgba(255,255,255,0.08)}
+
+/* RESULT */
+.result-header{text-align:center;padding:16px 0 20px}
+.result-title{font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--gold);font-weight:700}
+.result-subtitle{color:rgba(255,255,255,0.4);font-size:0.78rem;margin-top:5px}
+.my-vote-banner{background:linear-gradient(135deg,rgba(201,168,76,0.15),rgba(201,168,76,0.05));border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:13px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.my-vote-label{font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.4);font-weight:700;margin-bottom:2px}
+.my-vote-name{font-weight:700;font-size:0.95rem;color:var(--goldl)}
+.result-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.result-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.result-row:last-child{margin-bottom:0}
+.result-pos{font-size:1rem;width:22px;text-align:center;flex-shrink:0}
+.result-horse-name{font-weight:700;font-size:0.85rem;color:rgba(255,255,255,0.8);flex:1}
+.result-count{color:var(--goldl);font-weight:700;font-size:0.82rem;white-space:nowrap}
+.result-bar-wrap{height:5px;background:rgba(255,255,255,0.06);border-radius:4px;margin-top:3px;overflow:hidden}
+.result-bar{height:5px;border-radius:4px;transition:width 0.6s cubic-bezier(0.4,0,0.2,1)}
+.result-total{text-align:center;color:rgba(255,255,255,0.25);font-size:0.72rem;padding:10px 0 2px}
+.refresh-note{text-align:center;color:rgba(255,255,255,0.18);font-size:0.68rem;padding-bottom:6px}
+.highlight-row .result-horse-name,.highlight-row .result-count{color:var(--goldl)}
+
+/* FINAL RESULT — shown when race finished */
+.final-banner{background:linear-gradient(135deg,rgba(201,168,76,0.18),rgba(31,107,61,0.1));border:1px solid rgba(201,168,76,0.4);border-radius:14px;padding:18px;margin-bottom:16px;text-align:center}
+.final-pos-num{font-family:'Playfair Display',serif;font-size:2.8rem;font-weight:700;color:var(--gold);line-height:1}
+.final-pos-label{font-size:0.78rem;color:rgba(255,255,255,0.45);margin-top:4px}
+.final-horse-name{font-size:1.1rem;font-weight:700;color:rgba(255,255,255,0.9);margin-top:8px}
+.final-medal{font-size:2rem;display:block;margin-bottom:6px}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:60px 20px}
+.empty-icon{font-size:3rem;display:block;margin-bottom:12px;opacity:0.3}
+.empty-text{color:rgba(255,255,255,0.3);font-size:0.9rem;line-height:1.7}
+
+/* LOADING */
+.loading-wrap{text-align:center;padding:60px 20px}
+.loading-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gold);animation:blink 1.2s infinite}
+.loading-dot:nth-child(2){animation-delay:0.2s;margin:0 6px}
+.loading-dot:nth-child(3){animation-delay:0.4s}
+@keyframes blink{0%,80%,100%{opacity:0.2}40%{opacity:1}}
+
+.footer{text-align:center;padding:24px 20px;color:rgba(255,255,255,0.12);font-size:0.68rem;max-width:440px;margin:0 auto}
+</style>
+</head>
+<body>
+<div class="header">
+  <span class="logo-icon">🏇</span>
+  <div class="logo">Royal Turf</div>
+  <div class="subtitle">Votação do Público</div>
+</div>
+
+<div class="screen active" id="screen-loading">
+  <div class="loading-wrap">
+    <span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span>
+  </div>
+</div>
+
+<div class="screen" id="screen-vote">
+  <p class="vote-intro">Qual cavalo vai vencer? Escolha o seu favorito.</p>
+  <div id="horse-list"></div>
+  <button class="vote-btn" id="vote-btn" disabled onclick="confirmarVoto()">🗳 Confirmar Voto</button>
+  <div class="already-voted" id="already-voted" style="display:none">Você já votou. Obrigado!</div>
+  <button class="view-results-btn" onclick="showScreen('result')">Ver placar atual →</button>
+</div>
+
+<div class="screen" id="screen-result">
+  <div class="result-header">
+    <div class="result-title" id="result-title">Placar da Votação 📊</div>
+    <div class="result-subtitle" id="result-subtitle">Atualiza a cada 5 segundos</div>
+  </div>
+  <div id="final-result-banner" style="display:none"></div>
+  <div class="my-vote-banner" id="my-vote-banner" style="display:none">
+    <span style="font-size:1.4rem">🐎</span>
+    <div>
+      <div class="my-vote-label">Seu voto</div>
+      <div class="my-vote-name" id="my-vote-name">—</div>
+    </div>
+  </div>
+  <div class="result-card" id="result-list"></div>
+  <div class="result-total" id="result-total"></div>
+  <div class="refresh-note" id="refresh-note">Placar atualiza a cada 5 segundos</div>
+  <button class="view-results-btn" onclick="showScreen('vote')" id="back-btn">← Voltar para votação</button>
+</div>
+
+<div class="screen" id="screen-empty">
+  <div class="empty-state">
+    <span class="empty-icon">🏟</span>
+    <div class="empty-text">Nenhuma corrida configurada ainda.<br>O administrador precisa adicionar os cavalos e gerar o QR.</div>
+  </div>
+</div>
+
+<div class="footer">Royal Turf · UniCEUB</div>
+
+<script>
+const MEDALS=['🥇','🥈','🥉'];
+const HORSE_COLORS=['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6','#1abc9c','#e67e22','#34495e','#e91e63','#00bcd4',
+  '#ff5722','#607d8b','#795548','#8bc34a','#ff9800','#9c27b0','#03a9f4','#f44336','#4caf50','#ffc107'];
+const HORSE_EMOJIS=['🐎','🏇','🐴','🦄','🎠','🐎','🏇','🐴','🐎','🏇','🐴','🦄','🎠','🐎','🏇','🐴','🐎','🏇','🐴','🦄'];
+
+let participants=[];  // [{nome, id, cor}]
+let myVote=null;      // horse name voted
+let raceFinished=false;
+
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  if(name==='result') renderResults();
+}
+
+function init(){
+  // Load participants from localStorage (written by royalturf admin)
+  try{
+    const raw=localStorage.getItem('rt_sim_participants');
+    if(raw){
+      const data=JSON.parse(raw);
+      participants=data.participants||[];
+    }
+  }catch(e){}
+
+  if(!participants.length){showScreen('empty');return;}
+
+  // Check if already voted (stored per session in sessionStorage)
+  try{myVote=sessionStorage.getItem('rt_my_vote')||null;}catch(e){}
+
+  renderHorses();
+  showScreen('vote');
+  if(myVote) showAlreadyVoted();
+
+  // Poll for race finish and vote updates
+  setInterval(checkRaceFinish,3000);
+  setInterval(()=>{
+    if(document.getElementById('screen-result').classList.contains('active')) renderResults();
+  },5000);
+  checkRaceFinish();
+}
+
+function renderHorses(){
+  const list=document.getElementById('horse-list');
+  list.innerHTML=participants.map((p,i)=>{
+    const cor=p.cor||HORSE_COLORS[i%HORSE_COLORS.length];
+    const emoji=HORSE_EMOJIS[i%HORSE_EMOJIS.length];
+    const isMyVote=myVote===p.nome;
+    return `<div class="horse-card${isMyVote?' selected':''}" id="hcard-${i}" onclick="selectHorse(${i},'${p.nome.replace(/'/g,"\\'")}')">
+      <div class="horse-num" style="background:${cor}">${i+1}</div>
+      <div style="flex:1">
+        <div class="horse-name">${p.nome}</div>
+      </div>
+      <span class="horse-emoji">${emoji}</span>
+    </div>`;
+  }).join('');
+}
+
+let selectedIdx=null;
+function selectHorse(idx,nome){
+  if(myVote)return;
+  selectedIdx=idx;
+  document.querySelectorAll('.horse-card').forEach(el=>el.classList.remove('selected'));
+  document.getElementById('hcard-'+idx).classList.add('selected');
+  document.getElementById('vote-btn').disabled=false;
+}
+
+function showAlreadyVoted(){
+  document.getElementById('vote-btn').style.display='none';
+  document.getElementById('already-voted').style.display='block';
+  document.querySelectorAll('.horse-card').forEach(el=>el.style.cursor='default');
+}
+
+function confirmarVoto(){
+  if(selectedIdx===null)return;
+  const nome=participants[selectedIdx].nome;
+  // Save vote to localStorage
+  try{
+    const votes=JSON.parse(localStorage.getItem('rt_sim_votes')||'{}');
+    votes[nome]=(votes[nome]||0)+1;
+    localStorage.setItem('rt_sim_votes',JSON.stringify(votes));
+    sessionStorage.setItem('rt_my_vote',nome);
+    myVote=nome;
+  }catch(e){alert('Erro ao salvar voto.');}
+
+  document.getElementById('my-vote-name').textContent=nome;
+  document.getElementById('my-vote-banner').style.display='flex';
+  showScreen('result');
+}
+
+function checkRaceFinish(){
+  try{
+    const finished=localStorage.getItem('rt_sim_finished')==='1';
+    if(finished&&!raceFinished){
+      raceFinished=true;
+      if(document.getElementById('screen-result').classList.contains('active')) renderResults();
+    }
+  }catch(e){}
+}
+
+function renderResults(){
+  checkRaceFinish();
+  let votes={};
+  try{votes=JSON.parse(localStorage.getItem('rt_sim_votes')||'{}');}catch(e){}
+  let raceResult={};
+  try{if(raceFinished)raceResult=JSON.parse(localStorage.getItem('rt_sim_result')||'{}');}catch(e){}
+
+  // Show my vote banner
+  if(myVote){
+    document.getElementById('my-vote-banner').style.display='flex';
+    document.getElementById('my-vote-name').textContent=myVote;
+  }
+
+  // If race finished, show final position of voted horse prominently
+  const finalbanner=document.getElementById('final-result-banner');
+  if(raceFinished&&myVote&&raceResult[myVote]){
+    const pos=raceResult[myVote];
+    const medal=pos===1?'🥇':pos===2?'🥈':pos===3?'🥉':'';
+    finalbanner.style.display='block';
+    finalbanner.innerHTML=`<div class="final-banner">
+      ${medal?`<span class="final-medal">${medal}</span>`:''}
+      <div class="final-pos-num">${pos}º lugar</div>
+      <div class="final-horse-name">${myVote}</div>
+      <div class="final-pos-label">${pos===1?'Seu cavalo venceu! 🎉':pos<=3?'Seu cavalo ficou no pódio!':'Resultado final da corrida'}</div>
+    </div>`;
+    document.getElementById('result-title').textContent='Corrida Encerrada 🏁';
+    document.getElementById('result-subtitle').textContent='Resultado oficial';
+    document.getElementById('refresh-note').style.display='none';
+    document.getElementById('back-btn').style.display='none';
+  } else if(raceFinished){
+    finalbanner.style.display='block';
+    finalbanner.innerHTML=`<div class="final-banner"><div class="final-pos-num" style="font-size:1.8rem">🏁</div><div class="final-pos-label" style="margin-top:6px">Corrida encerrada!</div></div>`;
+    document.getElementById('result-title').textContent='Corrida Encerrada 🏁';
+    document.getElementById('refresh-note').style.display='none';
+  }
+
+  // Votes ranking
+  const rows=participants.map((p,i)=>({nome:p.nome,cor:p.cor||HORSE_COLORS[i%HORSE_COLORS.length],count:votes[p.nome]||0}));
+  rows.sort((a,b)=>b.count-a.count);
+  const total=rows.reduce((s,r)=>s+r.count,0);
+
+  if(!total){
+    document.getElementById('result-list').innerHTML='<div style="text-align:center;padding:18px;color:rgba(255,255,255,0.25);font-size:0.82rem">Nenhum voto computado ainda.</div>';
+    document.getElementById('result-total').textContent='';
+    return;
+  }
+  document.getElementById('result-list').innerHTML=rows.map((r,i)=>{
+    const pct=total?Math.round(r.count/total*100):0;
+    const isMe=r.nome===myVote;
+    const barColor=isMe?'linear-gradient(90deg,var(--ga),var(--gold))':'rgba(255,255,255,0.12)';
+    return `<div class="result-row${isMe?' highlight-row':''}">
+      <span class="result-pos">${MEDALS[i]||''}</span>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span class="result-horse-name">${r.nome}${isMe?' ◀':''}</span>
+          <span class="result-count">${r.count} (${pct}%)</span>
+        </div>
+        <div class="result-bar-wrap"><div class="result-bar" style="width:${pct}%;background:${barColor}"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('result-total').textContent=`${total} voto${total!==1?'s':''} computados`;
+}
+
+init();
+</script>
+</body>
+</html>
