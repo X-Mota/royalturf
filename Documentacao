@@ -344,3 +344,68 @@ O relatório funciona como extrato financeiro pessoal do apostador, permitindo:
 ---
 
 # Desenvolvido para a disciplina de Desenvolvimento Web com PHP e MySQL
+
+```mermaid
+erDiagram
+    usuarios {
+        int id PK
+        varchar nome
+        varchar email UK
+        varchar senha_hash
+        enum perfil
+        timestamp criado_em
+    }
+
+    cavalos {
+        int id PK
+        varchar nome
+        varchar raca
+        int idade
+        decimal peso
+    }
+
+    joqueis {
+        int id PK
+        varchar nome
+        decimal peso
+        int vitorias
+    }
+
+    corridas {
+        int id PK
+        varchar hipodromo
+        datetime data_hora
+        int distancia
+        enum status
+    }
+
+    inscricoes {
+        int id PK
+        int corrida_id FK
+        int cavalo_id FK
+        int joquei_id FK
+        decimal odd_inicial
+    }
+
+    apostas {
+        int id PK
+        int usuario_id FK
+        int inscricao_id FK
+        decimal valor_apostado
+        enum status_aposta
+        timestamp criado_em
+    }
+
+    resultados {
+        int id PK
+        int inscricao_id FK
+        int posicao
+        varchar tempo_gasto
+    }
+
+    usuarios ||--o{ apostas : "realiza"
+    corridas ||--o{ inscricoes : "possui"
+    cavalos ||--o{ inscricoes : "participa"
+    joqueis ||--o{ inscricoes : "conduz"
+    inscricoes ||--o{ apostas : "recebe"
+    inscricoes ||--o| resultados : "gera"
