@@ -1,411 +1,340 @@
-# 🏇 Royal Turf — Sistema de Gerenciamento de Hipismo e Apostas
+# ROYAL TURF — Arquitetura de Software
 
-**Disciplina:** Desenvolvimento Web com PHP e MySQL
-**Trabalho A3**
+**Sistema Web de Gerenciamento de Hipismo e Apostas**
 
----
-
-# 1. Domínio de Informações e Justificativa
-
-## 1.1 Descrição do Sistema
-
-O **Royal Turf** é um sistema de gerenciamento para hipódromos que centraliza o controle operacional de cavalos, jóqueis, corridas, inscrições e resultados.
-
-A plataforma disponibiliza:
-
-* Área administrativa para gerenciamento completo do sistema;
-* Controle de cavalos, jóqueis e corridas;
-* Homologação de inscrições;
-* Registro de resultados oficiais;
-* Área restrita para apostadores;
-* Sistema de apostas fictícias com saldo virtual;
-* Relatórios e estatísticas de desempenho.
+**Equipe:** *(Nome da Equipe)*
+**Versão:** 1.0
 
 ---
 
-## 1.2 Justificativa do Domínio
+# Arquitetura de Software
 
-O gerenciamento de competições hípicas apresenta elevado grau de interdependência entre entidades relacionais, tornando-se um excelente cenário para aplicação prática de bancos de dados relacionais.
+## Sistema Web “ROYAL TURF”
 
-O projeto possibilita a utilização de:
-
-* Integridade referencial;
-* Chaves primárias e estrangeiras;
-* Relacionamentos 1:N e 1:1;
-* Consultas com JOIN;
-* Controle de acesso por perfil;
-* Geração de relatórios em PDF.
+**Sistema de gestão de corridas hípicas, competidores e apostas virtuais**
 
 ---
 
-## 1.3 Usuários do Sistema
+## 1. Visão Geral do Sistema
 
-### 👨‍💼 Administrador
+O ROYAL TURF é um sistema web desenvolvido para auxiliar hipódromos no gerenciamento de cavalos, jóqueis, corridas, inscrições e resultados oficiais, além de disponibilizar uma área exclusiva para apostadores realizarem apostas fictícias utilizando saldo virtual.
 
-Possui acesso total ao sistema.
+O sistema surge da necessidade de centralizar informações operacionais relacionadas às competições hípicas, reduzindo controles manuais e proporcionando maior organização das corridas e dos participantes.
 
-Responsabilidades:
-
-* CRUD de cavalos;
-* CRUD de jóqueis;
-* Gerenciamento de corridas;
-* Homologação de inscrições;
-* Registro de resultados;
-* Emissão de relatórios.
-
-### 🎯 Apostador
-
-Usuário autenticado com acesso à área de apostas.
-
-Funcionalidades:
-
-* Consultar corridas abertas;
-* Visualizar retrospectos dos cavalos;
-* Realizar apostas fictícias;
-* Consultar saldo virtual;
-* Emitir relatórios pessoais.
+Além da administração esportiva, a plataforma disponibiliza mecanismos de consulta estatística, acompanhamento de resultados e geração de relatórios em PDF para controle e auditoria das movimentações realizadas pelos usuários.
 
 ---
 
-# 2. Histórias de Usuário
+## 2. Arquitetura Geral da Solução
 
-| ID    | Como      | Quero                       | Para                          | Critério de Aceite                                |
-| ----- | --------- | --------------------------- | ----------------------------- | ------------------------------------------------- |
-| HU-01 | Apostador | Fazer login                 | Acessar área restrita         | Sessão PHP iniciada e redirecionamento por perfil |
-| HU-02 | Apostador | Visualizar corridas abertas | Escolher apostas              | Exibir apenas corridas com status ABERTA          |
-| HU-03 | Apostador | Filtrar corridas            | Encontrar eventos específicos | Filtros combinados via WHERE dinâmica             |
-| HU-04 | Apostador | Registrar aposta            | Validar palpite               | Saldo deduzido e aposta registrada                |
-| HU-05 | Apostador | Exportar PDF                | Obter comprovante             | PDF gerado via FPDF/DomPDF                        |
-| HU-06 | Admin     | Gerenciar cavalos           | Atualizar plantel             | Campos obrigatórios validados                     |
-| HU-07 | Admin     | Gerenciar jóqueis           | Controlar pilotos             | Validação técnica aplicada                        |
-| HU-08 | Admin     | Criar corridas              | Planejar eventos              | Data futura obrigatória                           |
-| HU-09 | Admin     | Realizar inscrições         | Montar páreos                 | Cavalo não pode repetir na mesma corrida          |
-| HU-10 | Admin     | Registrar resultados        | Encerrar evento               | Status alterado para ENCERRADA                    |
-| HU-11 | Admin     | Consultar relatórios        | Analisar desempenho           | Exibição de estatísticas e taxa de vitória        |
+O sistema será composto por três camadas principais:
 
----
+* Front End;
+* Back End;
+* Banco de Dados Relacional.
 
-# 3. Protótipo de Telas
+O Front End será responsável pela interação com usuários administradores e apostadores.
 
-## 🔐 Tela de Login (`#auth-screen`)
+O Back End centralizará todas as regras de negócio relacionadas à autenticação, gerenciamento de corridas, inscrições, apostas e resultados.
 
-* Autenticação via e-mail e senha;
-* Tratamento de erros;
-* Controle de sessão.
+O Banco de Dados armazenará todas as informações do sistema de forma estruturada e segura.
 
----
+A arquitetura segue o modelo apresentado abaixo:
 
-## 🏁 Corridas Abertas (`#screen-programa`)
+```mermaid
+flowchart TD
 
-* Cartões de corrida;
-* Lista de competidores;
-* Odds dinâmicas;
-* Bet Slip lateral.
+    A["USUÁRIO<br/>Administrador ou Apostador"]
 
----
+    B["FRONT END"]
+    B1["Login e Autenticação"]
+    B2["Gestão de Corridas"]
+    B3["Gestão de Cavalos"]
+    B4["Gestão de Jóqueis"]
+    B5["Apostas"]
+    B6["Relatórios"]
 
-## 💰 Minhas Apostas (`#screen-apostas`)
+    C["BACK END - PHP"]
+    C1["Controllers"]
+    C2["Services"]
+    C3["Regras de Negócio"]
+    C4["Segurança"]
+    C5["Persistência"]
 
-* Histórico de apostas;
-* Saldo virtual;
-* Bilhetes agrupados:
+    D["BANCO DE DADOS - MYSQL"]
 
-  * Pendentes;
-  * Ganhas;
-  * Perdidas.
+    A --> B
 
----
+    B --> B1
+    B --> B2
+    B --> B3
+    B --> B4
+    B --> B5
+    B --> B6
 
-## 📊 Estatísticas de Cavalos (`#screen-busca`)
+    B --> C
 
-* Busca avançada;
-* Histórico de desempenho;
-* Dados técnicos.
+    C --> C1
+    C --> C2
+    C --> C3
+    C --> C4
+    C --> C5
 
----
-
-## 🐎 Painel Admin – Cavalos (`#admin-cavalos`)
-
-* Inclusão;
-* Alteração;
-* Exclusão lógica.
-
----
-
-## 🏇 Painel Admin – Corridas (`#admin-corridas`)
-
-* Gestão de cronograma;
-* Vinculação de competidores.
-
----
-
-## 🏆 Painel Admin – Resultados (`#admin-resultados`)
-
-* Registro das colocações;
-* Inserção de tempos oficiais.
-
----
-
-# 4. Modelo Entidade-Relacionamento (MER)
-
-## Relacionamentos
-
-| Entidade A | Cardinalidade | Entidade B | Descrição                                    |
-| ---------- | ------------- | ---------- | -------------------------------------------- |
-| usuarios   | 1:N           | apostas    | Um usuário pode realizar várias apostas      |
-| cavalos    | 1:N           | inscricoes | Um cavalo pode participar de várias corridas |
-| joqueis    | 1:N           | inscricoes | Um jóquei pode montar em várias corridas     |
-| corridas   | 1:N           | inscricoes | Uma corrida possui várias inscrições         |
-| inscricoes | 1:N           | apostas    | Uma inscrição pode receber várias apostas    |
-| inscricoes | 1:0..1        | resultados | Uma inscrição gera no máximo um resultado    |
-
----
-
-# 5. Dicionário de Dados
-
-## Tabela: usuarios
-
-| Campo      | Tipo         | Restrições         |
-| ---------- | ------------ | ------------------ |
-| id         | INT          | PK, AUTO_INCREMENT |
-| nome       | VARCHAR(100) | NOT NULL           |
-| email      | VARCHAR(150) | UNIQUE             |
-| senha_hash | VARCHAR(255) | NOT NULL           |
-| perfil     | ENUM         | admin/apostador    |
-| criado_em  | TIMESTAMP    | CURRENT_TIMESTAMP  |
-
----
-
-## Tabela: cavalos
-
-| Campo | Tipo         |
-| ----- | ------------ |
-| id    | INT          |
-| nome  | VARCHAR(100) |
-| raca  | VARCHAR(50)  |
-| idade | INT          |
-| peso  | DECIMAL(5,2) |
-
----
-
-## Tabela: joqueis
-
-| Campo    | Tipo         |
-| -------- | ------------ |
-| id       | INT          |
-| nome     | VARCHAR(100) |
-| peso     | DECIMAL(4,1) |
-| vitorias | INT          |
-
----
-
-## Tabela: corridas
-
-| Campo     | Tipo         |
-| --------- | ------------ |
-| id        | INT          |
-| hipodromo | VARCHAR(100) |
-| data_hora | DATETIME     |
-| distancia | INT          |
-| status    | ENUM         |
-
----
-
-## Tabela: inscricoes
-
-| Campo       | Tipo         |
-| ----------- | ------------ |
-| id          | INT          |
-| corrida_id  | FK           |
-| cavalo_id   | FK           |
-| joquei_id   | FK           |
-| odd_inicial | DECIMAL(5,2) |
-
----
-
-## Tabela: apostas
-
-| Campo          | Tipo          |
-| -------------- | ------------- |
-| id             | INT           |
-| usuario_id     | FK            |
-| inscricao_id   | FK            |
-| valor_apostado | DECIMAL(10,2) |
-| status_aposta  | ENUM          |
-| criado_em      | TIMESTAMP     |
-
----
-
-## Tabela: resultados
-
-| Campo        | Tipo        |
-| ------------ | ----------- |
-| id           | INT         |
-| inscricao_id | FK UNIQUE   |
-| posicao      | INT         |
-| tempo_gasto  | VARCHAR(10) |
-
----
-
-# 6. Filtros de Busca Avançada
-
-## 🔎 Correspondência Parcial
-
-Busca por texto livre utilizando:
-
-```sql
-LIKE '%termo%'
+    C --> D
 ```
 
-Aplicado para:
+O fluxo de funcionamento ocorre da seguinte forma:
+
+1. O usuário acessa o sistema por meio do navegador.
+2. O Front End exibe as funcionalidades disponíveis de acordo com seu perfil.
+3. O Back End recebe e processa as requisições.
+4. As regras de negócio são executadas.
+5. Os dados são consultados ou persistidos no banco.
+6. Os resultados retornam para o usuário.
+
+---
+
+## 3. Front End
+
+O Front End será responsável pela interface gráfica e pela experiência de navegação dos usuários.
+
+As principais funcionalidades disponibilizadas são:
+
+### Apostador
+
+* Login no sistema;
+* Consulta de corridas abertas;
+* Pesquisa de cavalos;
+* Visualização de estatísticas;
+* Registro de apostas;
+* Consulta de histórico;
+* Exportação de relatórios PDF.
+
+### Administrador
+
+* Cadastro de cavalos;
+* Cadastro de jóqueis;
+* Cadastro de corridas;
+* Gerenciamento de inscrições;
+* Registro de resultados;
+* Consulta de relatórios gerenciais.
+
+Perfis disponíveis:
+
+| Perfil        | Responsabilidades                            |
+| ------------- | -------------------------------------------- |
+| Administrador | Controle completo do sistema                 |
+| Apostador     | Consulta de corridas e realização de apostas |
+
+Toda comunicação ocorrerá através do Back End, sem acesso direto ao banco de dados.
+
+---
+
+## 4. Back End — PHP
+
+O Back End será desenvolvido em PHP e será responsável pela implementação das regras de negócio da plataforma.
+
+Principais responsabilidades:
+
+* Autenticação de usuários;
+* Controle de sessões;
+* Gerenciamento de permissões;
+* Processamento de apostas;
+* Cadastro de entidades do sistema;
+* Emissão de relatórios PDF;
+* Integração com banco de dados MySQL.
+
+As camadas previstas são:
+
+* Controller Layer;
+* Service Layer;
+* Repository Layer;
+* Security Layer.
+
+---
+
+## 5. Segurança e Controle de Acesso
+
+O sistema utilizará autenticação baseada em sessão PHP.
+
+Após realizar login com sucesso, o usuário terá acesso apenas às funcionalidades compatíveis com seu perfil.
+
+Recursos de segurança:
+
+* Login autenticado;
+* Controle de sessão;
+* Restrição de acesso por perfil;
+* Senhas armazenadas com hash criptográfico;
+* Proteção de áreas administrativas;
+* Validação de formulários;
+* Controle de permissões.
+
+Perfis de acesso:
+
+| Perfil        | Permissões                        |
+| ------------- | --------------------------------- |
+| Administrador | Gerenciamento total da plataforma |
+| Apostador     | Consulta e realização de apostas  |
+
+As senhas serão armazenadas utilizando algoritmos seguros de hash, garantindo proteção das credenciais dos usuários.
+
+---
+
+## 6. Banco de Dados — MySQL
+
+A escolha do MySQL é justificada pela sua robustez, ampla utilização em aplicações web e excelente suporte a relacionamentos entre entidades.
+
+O modelo de dados foi estruturado de forma normalizada para garantir integridade, consistência e desempenho das consultas.
+
+Principais entidades:
+
+* usuarios;
+* cavalos;
+* joqueis;
+* corridas;
+* inscricoes;
+* apostas;
+* resultados.
+
+Relacionamentos principais:
+
+| Entidade A | Relacionamento | Entidade B |
+| ---------- | -------------- | ---------- |
+| usuarios   | 1:N            | apostas    |
+| cavalos    | 1:N            | inscricoes |
+| joqueis    | 1:N            | inscricoes |
+| corridas   | 1:N            | inscricoes |
+| inscricoes | 1:N            | apostas    |
+| inscricoes | 1:1            | resultados |
+
+O banco será acessado exclusivamente pelo Back End.
+
+---
+
+## 7. Funcionalidades Principais
+
+### Gestão de Cavalos
+
+Permite:
+
+* Cadastro;
+* Edição;
+* Exclusão;
+* Consulta de estatísticas.
+
+### Gestão de Jóqueis
+
+Permite:
+
+* Cadastro;
+* Atualização;
+* Controle de vitórias;
+* Consulta de desempenho.
+
+### Gestão de Corridas
+
+Permite:
+
+* Criação de eventos;
+* Controle de cronograma;
+* Definição de status;
+* Encerramento de provas.
+
+### Gestão de Inscrições
+
+Permite:
+
+* Vincular cavalos às corridas;
+* Vincular jóqueis aos cavalos;
+* Definir odds iniciais.
+
+### Sistema de Apostas
+
+Permite:
+
+* Registro de apostas fictícias;
+* Controle de saldo virtual;
+* Histórico de movimentações;
+* Consulta de resultados.
+
+### Relatórios
+
+Permite:
+
+* Exportação em PDF;
+* Histórico de apostas;
+* Estatísticas de desempenho;
+* Relatórios gerenciais.
+
+---
+
+## 8. Filtros de Busca
+
+O sistema disponibilizará mecanismos de busca avançada para facilitar a localização de informações.
+
+### Correspondência Parcial
+
+Pesquisa textual utilizando:
+
+```sql
+LIKE '%texto%'
+```
+
+Aplicada em:
 
 * Cavalos;
 * Jóqueis.
 
----
+### Categoria Fixa
 
-## 📋 Categoria Fixa
+Filtragem por:
 
-Filtro por status:
+* Corridas abertas;
+* Corridas em andamento;
+* Corridas encerradas.
 
-* ABERTA
-* EM_ANDAMENTO
-* ENCERRADA
+### Intervalo Numérico
 
-Implementado com `<select>`.
-
----
-
-## 📈 Intervalo Numérico
-
-Utiliza operadores:
+Utilização de operadores:
 
 ```sql
 >=
 <=
 ```
 
-Aplicado para:
+Aplicados em:
 
 * Odds;
-* Estatísticas;
-* Desempenho.
+* Faixas de desempenho;
+* Estatísticas.
 
 ---
 
-# 7. Relatório PDF
+## 9. Relatórios em PDF
 
-## 7.1 Escopo Técnico
+O sistema disponibilizará a geração de relatórios PDF por meio de bibliotecas PHP como FPDF ou DomPDF.
 
-O sistema gera relatórios PDF utilizando:
+O relatório de apostas conterá:
 
-* FPDF
-* DomPDF
-
-O relatório é criado no servidor e disponibilizado para download.
-
----
-
-## 7.2 Dados Consolidados
-
-O documento apresenta:
-
-* ID da aposta;
+* Identificador da aposta;
 * Data da corrida;
 * Hipódromo;
-* Cavalo escolhido;
+* Cavalo selecionado;
 * Odd registrada;
 * Valor apostado;
 * Resultado final;
 * Lucro ou prejuízo.
 
----
-
-## 7.3 Utilidade Operacional
-
-O relatório funciona como extrato financeiro pessoal do apostador, permitindo:
-
-* Controle de movimentações;
-* Análise de desempenho;
-* Auditoria dos resultados obtidos.
+Essa funcionalidade permitirá ao usuário acompanhar seu histórico de movimentações e desempenho dentro da plataforma.
 
 ---
 
-# Tecnologias Utilizadas
+## 10. Arquitetura de Implantação
 
-* PHP
-* MySQL
-* HTML5
-* CSS3
-* JavaScript
-* Bootstrap
-* FPDF / DomPDF
+A implantação do ROYAL TURF seguirá uma arquitetura em três camadas:
 
----
+* Cliente Web (Navegador);
+* Servidor PHP;
+* Banco de Dados MySQL.
 
-# Desenvolvido para a disciplina de Desenvolvimento Web com PHP e MySQL
-
-```mermaid
-erDiagram
-    usuarios {
-        int id PK
-        varchar nome
-        varchar email UK
-        varchar senha_hash
-        enum perfil
-        timestamp criado_em
-    }
-
-    cavalos {
-        int id PK
-        varchar nome
-        varchar raca
-        int idade
-        decimal peso
-    }
-
-    joqueis {
-        int id PK
-        varchar nome
-        decimal peso
-        int vitorias
-    }
-
-    corridas {
-        int id PK
-        varchar hipodromo
-        datetime data_hora
-        int distancia
-        enum status
-    }
-
-    inscricoes {
-        int id PK
-        int corrida_id FK
-        int cavalo_id FK
-        int joquei_id FK
-        decimal odd_inicial
-    }
-
-    apostas {
-        int id PK
-        int usuario_id FK
-        int inscricao_id FK
-        decimal valor_apostado
-        enum status_aposta
-        timestamp criado_em
-    }
-
-    resultados {
-        int id PK
-        int inscricao_id FK
-        int posicao
-        varchar tempo_gasto
-    }
-
-    usuarios ||--o{ apostas : "realiza"
-    corridas ||--o{ inscricoes : "possui"
-    cavalos ||--o{ inscricoes : "participa"
-    joqueis ||--o{ inscricoes : "conduz"
-    inscricoes ||--o{ apostas : "recebe"
-    inscricoes ||--o| resultados : "gera"
+Essa estrutura garante separação de responsabilidades, facilidade de manutenção, escalabilidade e maior segurança para os dados da aplicação.
