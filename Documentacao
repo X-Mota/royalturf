@@ -1,158 +1,71 @@
-# ♞ ROYAL TURF — SISTEMA DE GERENCIAMENTO DE HIPISMO E APOSTAS
-**Documentação Completa — Trabalho A3** *Desenvolvimento Web com PHP e MySQL* ---
+```mermaid
+erDiagram
 
-## 1. Domínio de Informações e Justificativa
+    USUARIOS ||--o{ APOSTAS : "realiza"
 
-### 1.1 Descrição do Sistema
-O Royal Turf é um sistema de gerenciamento para hipódromo que centraliza o cadastro de cavalos, jóqueis, corridas, inscrições, resultados e apostas. O sistema permite que administradores registrem e controlem toda a operação de um hipódromo, enquanto apostadores autenticados podem consultar o programa de corridas, visualizar estatísticas e realizar apostas fictícias.
+    CAVALOS ||--o{ INSCRICOES : "participa"
 
-### 1.2 Justificativa do Domínio
-O hipismo é um esporte com múltiplas entidades interdependentes que se relacionam de forma rica e variada, tornando-o um domínio ideal para demonstrar um CRUD completo com integridade referencial. O domínio permite filtros variados (data, hipódromo, status), relatórios consolidados de movimentação financeira e autenticação com dois perfis distintos de usuário.
+    JOQUEIS ||--o{ INSCRICOES : "monta"
 
-### 1.3 Usuários do Sistema
-* **Perfil Administrador:** Acessa o painel administrativo. Realiza CRUD completo de cavalos, jóqueis, corridas, inscrições e resultados. Visualiza relatórios gerenciais.
-* **Perfil Apostador:** Acessa a área pública após autenticação. Consulta corridas abertas, realiza apostas gerenciando seu saldo fictício, visualiza inscrições e estatísticas dos cavalos e exporta o relatório de apostas em PDF.
+    CORRIDAS ||--o{ INSCRICOES : "possui"
 
----
+    INSCRICOES ||--o{ APOSTAS : "recebe"
 
-## 2. Histórias de Usuário
+    INSCRICOES ||--o| RESULTADOS : "gera resultado"
 
-| ID | Como... | Quero... | Para... | Critério de Aceite |
-| :--- | :--- | :--- | :--- | :--- |
-| **HU-01** | Apostador | Fazer login com e-mail e senha | Acessar a área restrita com segurança | Sessão PHP iniciada; redirecionamento por perfil. |
-| **HU-02** | Apostador | Visualizar a lista de corridas abertas | Escolher em qual quero apostar | Lista exibe apenas corridas com status ABERTA. |
-| **HU-03** | Apostador | Filtrar corridas por hipódromo e data | Encontrar rapidamente as corridas de interesse | Filtros combinam via WHERE dinâmico no MySQL. |
-| **HU-04** | Apostador | Registrar uma aposta em um cavalo | Validar meu palpite no sistema | Saldo deduzido; registro salvo na tabela apostas. |
-| **HU-05** | Apostador | Exportar meu histórico de apostas em PDF | Ter um comprovante impresso dos palpites | PDF gerado com biblioteca PHP (FPDF/DomPDF). |
-| **HU-06** | Admin | Cadastrar, editar e excluir cavalos | Manter o plantel atualizado | Validação de campos; exclusão bloqueia se houver vínculo. |
-| **HU-07** | Admin | Cadastrar, editar e excluir jóqueis | Controlar os pilotos ativos | Validação de peso; exclusão bloqueia se houver vínculo. |
-| **HU-08** | Admin | Criar corridas e definir hipódromos | Planejar o programa de eventos | Data futura obrigatória; local obrigatório. |
-| **HU-09** | Admin | Inscrever cavalos e jóqueis com odds | Montar o páreo completo | O mesmo cavalo não pode repetir-se na mesma corrida. |
-| **HU-10** | Admin | Registrar os resultados das corridas | Fechar o resultado oficial do evento | Posições de 1-N sem repetição; status muda para ENCERRADA. |
-| **HU-11** | Admin | Visualizar relatório de desempenho | Identificar os animais mais vitoriosos | Relatório mostra total de corridas e taxa de vitória (%). |
+    USUARIOS {
+        int id PK
+        string nome
+        string email UK
+        string senha_hash
+        enum perfil
+        timestamp criado_em
+    }
 
----
+    CAVALOS {
+        int id PK
+        string nome
+        string raca
+        int idade
+        decimal peso
+    }
 
-## 3. Protótipo de Telas
-O protótipo funcional completo está disponível no arquivo `royalturf_v10.html`, que simula todas as telas com dados de exemplo. Abaixo está a descrição técnica de mapeamento de cada interface:
+    JOQUEIS {
+        int id PK
+        string nome
+        decimal peso
+        int vitorias
+    }
 
-* **Tela de Login (`#auth-screen`):** Campos e-mail e senha, botão "Entrar no Hipódromo". Em caso de erro, exibe mensagem inline. Após login, direciona de acordo com o nível de acesso.
-* **Corridas Abertas (`#screen-programa`):** Exibição dos race-cards com cavalos inscritos. Cada linha mostra número, cavalo, jóquei e odd. Inclui o boletim de apostas lateral ("Bet Slip") com cálculo de retorno.
-* **Minhas Apostas (`#screen-apostas`):** Cards resumo indicando total alocado, ganhos, perdas e saldo líquido. Listagem das apostas realizadas filtradas por abas (Todas / Pendentes / Ganhas).
-* **Estatísticas de Cavalos (`#screen-busca`):** Filtros avançados combinados e tabela de resultados com perfil expansível para análise do histórico do animal.
-* **Painel Admin — Cavalos (`#admin-cavalos`):** Listagem de controle interno, contendo modais para a inserção de novos animais e edição de registros existentes.
-* **Painel Admin — Corridas (`#admin-corridas`):** Gestão de eventos e abertura da aba de inscrições para vinculação de jóqueis, cavalos e cotações da rodada.
-* **Painel Admin — Resultados (`#admin-resultados`):** Formulário de encerramento de páreos, permitindo salvar as posições finais e tempos de prova.
+    CORRIDAS {
+        int id PK
+        string hipodromo
+        datetime data_hora
+        int distancia
+        enum status
+    }
 
----
+    INSCRICOES {
+        int id PK
+        int corrida_id FK
+        int cavalo_id FK
+        int joquei_id FK
+        decimal odd_inicial
+    }
 
-## 4. Modelo Entidade-Relacionamento (MER)
+    APOSTAS {
+        int id PK
+        int usuario_id FK
+        int inscricao_id FK
+        decimal valor_apostado
+        enum status_aposta
+        timestamp criado_em
+    }
 
-> **Nota:** Adicione o arquivo de imagem do seu diagrama no repositório do GitHub e substitua o link abaixo (ex: `![MER](imagens/mer.png)`) para que o gráfico apareça aqui.
-
-O banco de dados foi modelado para garantir integridade relacional absoluta e cobrir todas as regras de negócio de apostas hípicas. Abaixo estão descritos os relacionamentos lógicos do sistema:
-
-| Entidade A | Card. | Entidade B | Descrição |
-| :--- | :---: | :--- | :--- |
-| **usuarios** | 1 — N | **apostas** | Um usuário pode realizar múltiplas apostas na plataforma. |
-| **cavalos** | 1 — N | **inscricoes** | Um cavalo pode ser inscrito em vários páreos diferentes ao longo do tempo. |
-| **joqueis** | 1 — N | **inscricoes** | Um jóquei pode ser escalado para montar em diferentes corridas. |
-| **corridas** | 1 — N | **inscricoes** | Uma corrida agrupa várias inscrições de competidores (páreo). |
-| **inscricoes** | 1 — N | **apostas** | Uma inscrição (par cavalo/corrida) pode receber apostas de vários usuários. |
-| **inscricoes** | 1 — 0..1 | **resultados** | Cada inscrição gera, no máximo, um resultado de classificação final. |
-
----
-
-## 5. Dicionário de Banco de Dados
-
-### Tabela: `usuarios`
-*Armazena credenciais e perfis de acesso dos usuários.*
-
-| Campo | Tipo (MySQL) | Restrições | Descrição |
-| :--- | :--- | :--- | :--- |
-| `id` | INT | PK, Auto Increment, NOT NULL | Identificador único. |
-| `nome` | VARCHAR(100) | NOT NULL | Nome completo. |
-| `email` | VARCHAR(150) | UNIQUE, NOT NULL | E-mail de login. |
-| `senha_hash` | VARCHAR(255) | NOT NULL | Hash seguro da senha (bcrypt). |
-| `perfil` | ENUM('admin', 'apostador') | NOT NULL, DEFAULT 'apostador' | Nível de permissão. |
-| `criado_em` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Data de cadastro. |
-
-### Tabela: `cavalos`
-*Cadastro de animais aptos para competição.*
-
-| Campo | Tipo (MySQL) | Restrições | Descrição |
-| :--- | :--- | :--- | :--- |
-| `id` | INT | PK, Auto Increment, NOT NULL | Identificador único do cavalo. |
-| `nome` | VARCHAR(100) | NOT NULL | Nome de corrida do animal. |
-| `raca` | VARCHAR(50) | NOT NULL | Raça ou linhagem genética. |
-| `idade` | INT | NOT NULL | Idade em anos. |
-| `peso` | DECIMAL(5,2) | NOT NULL | Peso corporal em kg. |
-
-### Tabela: `joqueis`
-*Cadastro de pilotos profissionais.*
-
-| Campo | Tipo (MySQL) | Restrições | Descrição |
-| :--- | :--- | :--- | :--- |
-| `id` | INT | PK, Auto Increment, NOT NULL | Identificador único do jóquei. |
-| `nome` | VARCHAR(100) | NOT NULL | Nome completo. |
-| `peso` | DECIMAL(4,1) | NOT NULL | Peso em kg (controle de carga). |
-| `vitorias` | INT | DEFAULT 0 | Histórico de primeiros lugares. |
-
-### Tabela: `corridas`
-*Cronograma de eventos planejados no hipódromo.*
-
-| Campo | Tipo (MySQL) | Restrições | Descrição |
-| :--- | :--- | :--- | :--- |
-| `id` | INT | PK, Auto Increment, NOT NULL | Identificador único da corrida. |
-| `hipodromo` | VARCHAR(100) | NOT NULL | Local do evento. |
-| `data_hora` | DATETIME | NOT NULL | Data e horário da largada. |
-| `distancia` | INT | NOT NULL | Distância da pista em metros. |
-| `status` | ENUM('ABERTA', 'EM_ANDAMENTO', 'ENCERRADA') | DEFAULT 'ABERTA' | Situação da prova. |
-
-### Tabela: `inscricoes`
-*Tabela associativa que define o páreo (quais cavalos e jóqueis correm em qual corrida).*
-
-| Campo | Tipo (MySQL) | Restrições | Descrição |
-| :--- | :--- | :--- | :--- |
-| `id` | INT | PK, Auto Increment, NOT NULL | Identificador único da inscrição. |
-| `corrida_id` | INT | FK (corridas.id), NOT NULL | Evento correspondente. |
-| `cavalo_id` | INT | FK (cavalos.id), NOT NULL | Animal escalado. |
-| `joquei_id` | INT | FK (joqueis.id), NOT NULL | Piloto escalado. |
-| `odd_inicial` | DECIMAL(5,2) | NOT NULL | Multiplicador de ganho (cotação). |
-
-### Tabela: `apostas`
-*Registra os palpites de dinheiro fictício realizados pelos apostadores.*
-
-| Campo | Tipo (MySQL) | Restrições | Descrição |
-| :--- | :--- | :--- | :--- |
-| `id` | INT | PK, Auto Increment, NOT NULL | Identificador do bilhete de aposta. |
-| `usuario_id` | INT | FK (usuarios.id), NOT NULL | Apostador titular que realizou o palpite. |
-| `inscricao_id` | INT | FK (inscricoes.id), NOT NULL | Cavalo/Páreo escolhido para aposta. |
-| `valor_apostado` | DECIMAL(10,2) | NOT NULL | Valor financeiro alocado na aposta. |
-| `status_aposta` | ENUM('PENDENTE', 'GANHA', 'PERDIDA') | DEFAULT 'PENDENTE' | Status atual do bilhete. |
-| `criado_em` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Data e hora em que a transação foi salva. |
-
-### Tabela: `resultados`
-*Fechamento e classificação oficial das corridas encerradas.*
-
-| Campo | Tipo (MySQL) | Restrições | Descrição |
-| :--- | :--- | :--- | :--- |
-| `id` | INT | PK, Auto Increment, NOT NULL | Identificador do resultado. |
-| `inscricao_id` | INT | FK (inscricoes.id), UNIQUE, NOT NULL | Link direto com competidor cadastrado. |
-| `posicao` | INT | NOT NULL | Colocação final na prova (Ex: 1 para vencedor). |
-| `tempo_gasto` | VARCHAR(10) | NULL | Tempo de conclusão da prova (ex: 1:14.32). |
-
----
-
-## 6. Definição dos Filtros de Busca Avançada
-O sistema utiliza um mecanismo de busca condicional dinâmica estruturado via PHP. Foram validados os 3 filtros obrigatórios com diferentes características de entrada de dados:
-1.  **Texto Livre (LIKE %termo%):** Aplicado no campo de busca por nome do Cavalo ou Jóquei. Permite correspondências parciais de texto simples digitado pelo usuário.
-2.  **Seleção por Categoria/Status (Elemento `<select>`):** Permite filtrar a listagem de corridas exibindo na tela apenas registros com status específicos ("ABERTA", "EM_ANDAMENTO" ou "ENCERRADA").
-3.  **Intervalo Numérico de Valores (Filtro Duplo):** Filtro que permite delimitar faixas mínimas e máximas de valores em pesquisas estatísticas (ex: buscar cavalos com taxa de vitória entre 20% e 50% ou odds específicas).
-
----
-
-## 7. Descrição do Relatório em PDF
-* **Escopo:** Módulo Back-end que processa queries relacionais estruturadas (`INNER JOIN`) e converte os dados diretamente em um arquivo PDF de download imediato.
-* **Dados Consolidados:** O documento emite o Extrato e Histórico Financeiro do Apostador. Contém ID do bilhete, data e hora, nome do hipódromo, cavalo escolhido, cotação (odd), valor apostado e o resultado financeiro consolidado (Lucro/Prejuízo).
-* **Utilidade Prática:** Funciona como um painel físico auditável para gerenciamento e controle de banca do usuário dentro da simulação do hipódromo.
+    RESULTADOS {
+        int id PK
+        int inscricao_id FK UNIQUE
+        int posicao
+        string tempo_gasto
+    }
+```
