@@ -2,7 +2,7 @@
 
 **Sistema Web de Gerenciamento de Hipismo e Apostas**
 
-**Equipe:** *(Nome da Equipe)*
+**Equipe:** *Mateus Mota e Bruno Lyra*
 **Versão:** 1.0
 
 ---
