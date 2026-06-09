@@ -1,71 +1,71 @@
 ```mermaid
 erDiagram
 
-    USUARIOS ||--o{ APOSTAS : "realiza"
-
-    CAVALOS ||--o{ INSCRICOES : "participa"
-
-    JOQUEIS ||--o{ INSCRICOES : "monta"
-
-    CORRIDAS ||--o{ INSCRICOES : "possui"
-
-    INSCRICOES ||--o{ APOSTAS : "recebe"
-
-    INSCRICOES ||--o| RESULTADOS : "gera resultado"
-
     USUARIOS {
-        int id PK
-        string nome
-        string email UK
-        string senha_hash
-        enum perfil
-        timestamp criado_em
+        INT id PK
+        VARCHAR nome
+        VARCHAR email UK
+        VARCHAR senha_hash
+        ENUM perfil
+        TIMESTAMP criado_em
     }
 
     CAVALOS {
-        int id PK
-        string nome
-        string raca
-        int idade
-        decimal peso
+        INT id PK
+        VARCHAR nome
+        VARCHAR raca
+        INT idade
+        DECIMAL peso
     }
 
     JOQUEIS {
-        int id PK
-        string nome
-        decimal peso
-        int vitorias
+        INT id PK
+        VARCHAR nome
+        DECIMAL peso
+        INT vitorias
     }
 
     CORRIDAS {
-        int id PK
-        string hipodromo
-        datetime data_hora
-        int distancia
-        enum status
+        INT id PK
+        VARCHAR hipodromo
+        DATETIME data_hora
+        INT distancia
+        ENUM status
     }
 
     INSCRICOES {
-        int id PK
-        int corrida_id FK
-        int cavalo_id FK
-        int joquei_id FK
-        decimal odd_inicial
+        INT id PK
+        INT corrida_id FK
+        INT cavalo_id FK
+        INT joquei_id FK
+        DECIMAL odd_inicial
     }
 
     APOSTAS {
-        int id PK
-        int usuario_id FK
-        int inscricao_id FK
-        decimal valor_apostado
-        enum status_aposta
-        timestamp criado_em
+        INT id PK
+        INT usuario_id FK
+        INT inscricao_id FK
+        DECIMAL valor_apostado
+        ENUM status_aposta
+        TIMESTAMP criado_em
     }
 
     RESULTADOS {
-        int id PK
-        int inscricao_id FK UNIQUE
-        int posicao
-        string tempo_gasto
+        INT id PK
+        INT inscricao_id FK UK
+        INT posicao
+        VARCHAR tempo_gasto
     }
+
+    USUARIOS ||--o{ APOSTAS : realiza
+
+    CAVALOS ||--o{ INSCRICOES : participa
+
+    JOQUEIS ||--o{ INSCRICOES : monta
+
+    CORRIDAS ||--o{ INSCRICOES : possui
+
+    INSCRICOES ||--o{ APOSTAS : recebe
+
+    INSCRICOES ||--o| RESULTADOS : gera
 ```
