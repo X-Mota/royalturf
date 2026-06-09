@@ -1,2 +1,0 @@
-# royalturf
-bruno e mateus
